@@ -161,7 +161,7 @@ class HistoryContent extends StatelessWidget {
   final String? historyError;
   final String selectedMonth;
   final Future<void> Function(int recordId)
-  onDeleteRecord; // Callback untuk delete record
+  onDeleteRecord;
 
   const HistoryContent({
     super.key,
@@ -202,7 +202,7 @@ class HistoryContent extends StatelessWidget {
       return ListView.builder(
         shrinkWrap: true,
         physics:
-            const NeverScrollableScrollPhysics(), // Managed by SingleChildScrollView in parent
+            const NeverScrollableScrollPhysics(), 
         padding: const EdgeInsets.symmetric(horizontal: 20.0),
         itemCount: attendanceRecords.length,
         itemBuilder: (context, index) {
@@ -221,7 +221,7 @@ class HistoryContent extends StatelessWidget {
               final minute = int.tryParse(parts[1]);
               if (hour != null && minute != null) {
                 if (hour > 8 || (hour == 8 && minute > 0)) {
-                  // Assuming 8:00 AM is the cutoff
+                 
                   isLate = true;
                 }
               }
@@ -232,7 +232,7 @@ class HistoryContent extends StatelessWidget {
             }
           }
           if (record.status == 'izin') {
-            isLate = false; // Izin status should not be marked as late
+            isLate = false; 
           }
 
           return Dismissible(
@@ -270,7 +270,7 @@ class HistoryContent extends StatelessWidget {
               );
             },
             onDismissed: (direction) {
-              onDeleteRecord(record.id); // Panggil callback
+              onDeleteRecord(record.id); 
             },
             child: HistoryAttendanceCard(
               dayOfWeek: dayOfWeek,
