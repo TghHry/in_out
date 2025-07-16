@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:in_out_2/data/copyright_watermark.dart';
 import 'package:in_out_2/models/profile_model.dart';
-import 'package:in_out_2/models/user_model.dart';
 // import 'package:in_out_2/presentation/home/pages/widgets/attandance_stats_card.dart';
 import 'package:in_out_2/presentation/home/pages/widgets/home_header.dart';
 import 'package:in_out_2/presentation/home/pages/widgets/live_attandance.dart';
 import 'package:in_out_2/presentation/home/services/home_service.dart';
 import 'package:in_out_2/presentation/profile/services/profile_service.dart';
+
 import 'package:in_out_2/services/session_manager.dart';
+import 'package:in_out_2/models/user_model.dart';
+import 'dart:async';
 import 'package:in_out_2/utils/app_colors.dart';
 
 class HomePage extends StatefulWidget {
@@ -46,6 +47,11 @@ class _HomePageState extends State<HomePage> {
         ).asBroadcastStream();
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
   Future<void> _fetchHomePageData() async {
     await Future.wait([_fetchUserProfile(), _fetchAttendanceStats()]);
   }
@@ -59,14 +65,6 @@ class _HomePageState extends State<HomePage> {
     });
 
     try {
-      final User? cachedUser = await _sessionManager.getUser();
-      if (cachedUser != null) {
-        setState(() {
-          _currentUser = cachedUser;
-        });
-        debugPrint('HomePage: Profil dimuat dari SessionManager (cache).');
-      }
-
       final String? token = await _sessionManager.getToken();
       if (token == null || token.isEmpty) {
         throw Exception(
@@ -173,7 +171,6 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         _attendanceStats = fetchedStats;
 
-      
         _attendanceStats!['total_absen_count'] =
             int.tryParse(_attendanceStats!['total_absen']?.toString() ?? '0') ??
             0;
@@ -186,8 +183,7 @@ class _HomePageState extends State<HomePage> {
         _attendanceStats!['has_checked_in_today'] =
             _attendanceStats!['sudah_absen_hari_ini'] == true;
 
-        _attendanceStats!['has_checked_out_today'] =
-            false; // Ini mungkin memerlukan data aktual dari API jika tersedia
+        _attendanceStats!['has_checked_out_today'] = false;
         debugPrint(
           'HomePage: _attendanceStats setelah parsing: $_attendanceStats',
         );
@@ -231,53 +227,53 @@ class _HomePageState extends State<HomePage> {
     debugPrint('HomePage: build terpanggil.');
 
     return Scaffold(
+      backgroundColor: AppColors.lightBackground,
       body: Stack(
         children: [
+       
           Positioned.fill(
             child: Image.asset(
               'lib/assets/images/home2.jpg',
               fit: BoxFit.cover,
-              height: double.infinity,
             ),
           ),
-          RefreshIndicator(
-            onRefresh: _fetchHomePageData,
-            color: AppColors.homeTopBlue,
-            backgroundColor: Colors.white,
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.only(
-                top: MediaQuery.of(context).padding.top + 20,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 10),
-                  HomeHeader(
-                    currentUser: _currentUser,
-                    isLoadingProfile: _isLoadingProfile,
-                    profileErrorMessage: _profileErrorMessage,
-                    clockStream: _clockStream,
-                  ),
-                  const SizedBox(height: 30),
-                  LiveAttendanceCard(clockStream: _clockStream),
-                  const SizedBox(height: 30),
-                  Positioned.fill(
-                    child: Align(
-                      alignment: Alignment.bottomCenter,
-                      child: Padding(
-                        padding: const EdgeInsets.only(bottom: 10.0),
-                        child: CopyrightWatermark(
-                          text: '© 2025 - IN - OUT. All rights reserved',
-                          fontSize: 15.0,
-                        ),
-                      ),
+      
+          SafeArea(
+       
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 10),
+                HomeHeader(
+                  currentUser: _currentUser,
+                  isLoadingProfile: _isLoadingProfile,
+                  profileErrorMessage: _profileErrorMessage,
+                  clockStream: _clockStream,
+                ),
+                const SizedBox(height: 30),
+                LiveAttendanceCard(clockStream: _clockStream),
+                const SizedBox(height: 30),
+           
+                const Spacer(),
+              
+                Align(
+             
+                  alignment: Alignment.bottomCenter,
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      bottom: 10.0,
+                    ), // Sesuaikan padding
+                    child: CopyrightWatermark(
+                      text: '© 2025 - IN - OUT. All rights reserved',
+                      fontSize: 15.0,
+                      rotationAngle: 0.0, // Tanpa rotasi
+                      textColor: AppColors.textDark.withOpacity(
+                        0.5,
+                      ), // Sesuaikan warna
                     ),
                   ),
-
-                  SizedBox(height: double.infinity),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ],
