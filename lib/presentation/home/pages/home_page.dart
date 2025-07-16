@@ -1,0 +1,287 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:in_out_2/data/copyright_watermark.dart';
+import 'package:in_out_2/models/profile_model.dart';
+import 'package:in_out_2/models/user_model.dart';
+// import 'package:in_out_2/presentation/home/pages/widgets/attandance_stats_card.dart';
+import 'package:in_out_2/presentation/home/pages/widgets/home_header.dart';
+import 'package:in_out_2/presentation/home/pages/widgets/live_attandance.dart';
+import 'package:in_out_2/presentation/home/services/home_service.dart';
+import 'package:in_out_2/presentation/profile/services/profile_service.dart';
+import 'package:in_out_2/services/session_manager.dart';
+import 'package:in_out_2/utils/app_colors.dart';
+
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  Map<String, dynamic>? _attendanceStats;
+  bool _isLoadingStats = true;
+  String? _statsErrorMessage;
+
+  User? _currentUser;
+  bool _isLoadingProfile = true;
+  String? _profileErrorMessage;
+
+  late Stream<DateTime> _clockStream;
+
+  final HomeService _homeService = HomeService();
+  final ProfileService _profileService = ProfileService();
+  final SessionManager _sessionManager = SessionManager();
+
+  @override
+  void initState() {
+    super.initState();
+    debugPrint('HomePage: initState terpanggil.');
+    _fetchHomePageData();
+
+    _clockStream =
+        Stream.periodic(
+          const Duration(seconds: 1),
+          (_) => DateTime.now(),
+        ).asBroadcastStream();
+  }
+
+  Future<void> _fetchHomePageData() async {
+    await Future.wait([_fetchUserProfile(), _fetchAttendanceStats()]);
+  }
+
+  Future<void> _fetchUserProfile() async {
+    if (!mounted) return;
+    setState(() {
+      _isLoadingProfile = true;
+      _profileErrorMessage = null;
+      _currentUser = null;
+    });
+
+    try {
+      final User? cachedUser = await _sessionManager.getUser();
+      if (cachedUser != null) {
+        setState(() {
+          _currentUser = cachedUser;
+        });
+        debugPrint('HomePage: Profil dimuat dari SessionManager (cache).');
+      }
+
+      final String? token = await _sessionManager.getToken();
+      if (token == null || token.isEmpty) {
+        throw Exception(
+          'Token otentikasi tidak ditemukan. Mohon login kembali.',
+        );
+      }
+
+      final ProfileResponse response = await _profileService.fetchUserProfile(
+        token,
+      );
+      if (!mounted) return;
+
+      if (response.data != null) {
+        final DateTime userCreatedAt =
+            response.data!.createdAt ?? DateTime(2000, 1, 1);
+        final DateTime userUpdatedAt =
+            response.data!.updatedAt ?? DateTime(2000, 1, 1);
+
+        final User fetchedUser = User(
+          id: response.data!.id,
+          name: response.data!.name,
+          email: response.data!.email,
+          emailVerifiedAt: response.data!.emailVerifiedAt,
+          createdAt: userCreatedAt,
+          updatedAt: userUpdatedAt,
+          batchId: response.data!.batchId,
+          trainingId: response.data!.trainingId,
+          jenisKelamin: response.data!.jenisKelamin,
+          profilePhotoPath: response.data!.profilePhoto,
+          onesignalPlayerId: response.data!.onesignalPlayerId,
+          batch: response.data!.batch,
+          training: response.data!.training,
+        );
+        await _sessionManager.saveUser(fetchedUser);
+
+        setState(() {
+          _currentUser = fetchedUser;
+        });
+        debugPrint(
+          'HomePage: Profil user berhasil dimuat dan diperbarui dari API.',
+        );
+      } else {
+        if (_currentUser == null) {
+          _profileErrorMessage =
+              response.message ?? 'Tidak ada data profil ditemukan.';
+        }
+        debugPrint('HomePage: Data profil null dari API: ${response.message}');
+      }
+    } catch (e) {
+      debugPrint('HomePage: Error fetching user profile: $e');
+      if (!mounted) return;
+      setState(() {
+        _profileErrorMessage = e.toString().replaceFirst('Exception: ', '');
+        _currentUser = null;
+      });
+      if (e.toString().contains('token tidak valid') ||
+          e.toString().contains('Sesi Anda telah berakhir') ||
+          e.toString().contains('Token has expired')) {
+        _sessionManager.clearSession().then((_) {
+          Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Sesi Anda telah berakhir. Mohon login kembali.'),
+            ),
+          );
+        });
+      } else {
+        if (_currentUser == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Gagal memuat profil: $_profileErrorMessage'),
+            ),
+          );
+        }
+      }
+    } finally {
+      if (!mounted) return;
+      setState(() {
+        _isLoadingProfile = false;
+      });
+      debugPrint('HomePage: _fetchUserProfile selesai.');
+    }
+  }
+
+  Future<void> _fetchAttendanceStats() async {
+    if (!mounted) return;
+    setState(() {
+      _isLoadingStats = true;
+      _statsErrorMessage = null;
+      _attendanceStats = null;
+    });
+
+    try {
+      final String? token = await _sessionManager.getToken();
+      if (token == null || token.isEmpty) {
+        throw Exception(
+          'Token otentikasi tidak ditemukan. Mohon login kembali.',
+        );
+      }
+      final Map<String, dynamic> fetchedStats = await _homeService
+          .getAttendanceStats(token);
+      debugPrint('HomePage: Absen Stats API response raw: $fetchedStats');
+      if (!mounted) return;
+      setState(() {
+        _attendanceStats = fetchedStats;
+
+      
+        _attendanceStats!['total_absen_count'] =
+            int.tryParse(_attendanceStats!['total_absen']?.toString() ?? '0') ??
+            0;
+        _attendanceStats!['total_masuk_count'] =
+            int.tryParse(_attendanceStats!['total_masuk']?.toString() ?? '0') ??
+            0;
+        _attendanceStats!['total_izin_count'] =
+            int.tryParse(_attendanceStats!['total_izin']?.toString() ?? '0') ??
+            0;
+        _attendanceStats!['has_checked_in_today'] =
+            _attendanceStats!['sudah_absen_hari_ini'] == true;
+
+        _attendanceStats!['has_checked_out_today'] =
+            false; // Ini mungkin memerlukan data aktual dari API jika tersedia
+        debugPrint(
+          'HomePage: _attendanceStats setelah parsing: $_attendanceStats',
+        );
+      });
+    } catch (e) {
+      debugPrint('HomePage: Error fetching attendance stats: $e');
+      if (!mounted) return;
+      setState(() {
+        _statsErrorMessage = e.toString().replaceFirst('Exception: ', '');
+        _attendanceStats = null;
+      });
+      if (e.toString().contains('token tidak valid') ||
+          e.toString().contains('Sesi Anda telah berakhir') ||
+          e.toString().contains('Token has expired')) {
+        _sessionManager.clearSession().then((_) {
+          Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Sesi Anda telah berakhir. Mohon login kembali.'),
+            ),
+          );
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal memuat statistik: $_statsErrorMessage'),
+          ),
+        );
+      }
+    } finally {
+      if (!mounted) return;
+      setState(() {
+        _isLoadingStats = false;
+      });
+      debugPrint('HomePage: _fetchAttendanceStats selesai.');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    debugPrint('HomePage: build terpanggil.');
+
+    return Scaffold(
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Image.asset(
+              'lib/assets/images/home2.jpg',
+              fit: BoxFit.cover,
+              height: double.infinity,
+            ),
+          ),
+          RefreshIndicator(
+            onRefresh: _fetchHomePageData,
+            color: AppColors.homeTopBlue,
+            backgroundColor: Colors.white,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.only(
+                top: MediaQuery.of(context).padding.top + 20,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 10),
+                  HomeHeader(
+                    currentUser: _currentUser,
+                    isLoadingProfile: _isLoadingProfile,
+                    profileErrorMessage: _profileErrorMessage,
+                    clockStream: _clockStream,
+                  ),
+                  const SizedBox(height: 30),
+                  LiveAttendanceCard(clockStream: _clockStream),
+                  const SizedBox(height: 30),
+                  Positioned.fill(
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 10.0),
+                        child: CopyrightWatermark(
+                          text: '© 2025 - IN - OUT. All rights reserved',
+                          fontSize: 15.0,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: double.infinity),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

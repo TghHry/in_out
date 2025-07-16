@@ -2,26 +2,25 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:in_out_2/presentations/attandance/auth/login/pages/login_page.dart';
-import 'package:in_out_2/presentations/attandance/auth/register/pages/register_page.dart';
-import 'package:in_out_2/presentations/attandance/home/pages/main_page.dart';
-import 'package:intl/date_symbol_data_local.dart'; // Untuk inisialisasi lokal tanggal
+import 'package:in_out_2/presentation/auth/login/pages/login_page.dart';
+import 'package:in_out_2/presentation/auth/register/pages/register_page.dart';
+import 'package:in_out_2/presentation/home/pages/main_page.dart';
+import 'package:intl/date_symbol_data_local.dart'; 
 
 /// Fungsi utama yang menjalankan aplikasi Flutter.
 void main() async {
-  // Memastikan semua widget Flutter binding sudah diinisialisasi.
+
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Memanggil initializeDateFormatting untuk mendukung format tanggal/waktu
-  // dalam bahasa Indonesia ('id_ID') di seluruh aplikasi.
+
   await initializeDateFormatting('id_ID', null);
 
-  // Mengatur gaya overlay UI sistem (status bar, navigation bar).
+
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent, // Membuat status bar transparan
-      statusBarIconBrightness: Brightness.light, // Warna ikon status bar
-      statusBarBrightness: Brightness.dark, // Untuk iOS
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light, 
+      statusBarBrightness: Brightness.dark, 
     ),
   );
 
@@ -35,17 +34,17 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false, 
-      title: 'in_out', // Nama aplikasi Anda
-      // Tema terang aplikasi. Anda bisa sesuaikan sesuai desain AppColors.
+      title: 'in_out', 
+     
       theme: ThemeData(
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
-        // Contoh kustomisasi dari AppColors.dart
+   
         scaffoldBackgroundColor: const Color(
           0xFFF5F5F5,
-        ), // Contoh lightBackground
+        ), 
         appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF5373E0), // Contoh homeTopBlue
+          backgroundColor: Color(0xFF5373E0),
           foregroundColor: Colors.white,
         ),
         textTheme: const TextTheme(
@@ -57,13 +56,12 @@ class MyApp extends StatelessWidget {
         ),
       ),
 
-      initialRoute: '/login', // Rute awal aplikasi (biasanya SplashPage)
+      initialRoute: '/login', 
       routes: {
-        // '/': (context) => const SplashPage(),
         '/login': (context) => const LoginPage(),
         '/register': (context) => const RegisterPage(),
         '/main': (context) =>
-            const MainPage(), // Halaman utama dengan BottomNavigationBar
+            const MainPage(), 
       },
     );
   }
