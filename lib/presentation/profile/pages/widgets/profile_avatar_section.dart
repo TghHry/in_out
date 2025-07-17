@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
+// import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:in_out_2/api/api_service.dart';
 import 'package:in_out_2/models/user_model.dart';
@@ -10,8 +10,7 @@ import 'package:in_out_2/utils/app_colors.dart';
 
 class ProfileAvatarSection extends StatefulWidget {
   final User? currentUser;
-  final VoidCallback
-  onProfileUpdated; 
+  final VoidCallback onProfileUpdated;
 
   const ProfileAvatarSection({
     super.key,
@@ -60,7 +59,7 @@ class _ProfileAvatarSectionState extends State<ProfileAvatarSection> {
         if (token == null) {
           throw Exception('Token tidak ditemukan. Mohon login kembali.');
         }
-
+        
         final result = await _profileService.updateProfilePhoto(
           token,
           base64Image,
@@ -118,10 +117,19 @@ class _ProfileAvatarSectionState extends State<ProfileAvatarSection> {
 
   @override
   Widget build(BuildContext context) {
-    final String? photoUrl =
-        widget.currentUser?.profilePhotoPath != null
-            ? _getFullProfilePhotoUrl(widget.currentUser!.profilePhotoPath)
-            : null;
+    // Helper untuk mendapatkan URL foto profil atau path asset
+    String? _getProfileImageSource() {
+      // Prioritas: fullProfilePhotoUrl dari currentUser
+      if (widget.currentUser?.profilePhotoPath != null &&
+          widget.currentUser!.profilePhotoPath!.isNotEmpty) {
+        // Asumsi _getFullProfilePhotoUrl mengembalikan URL lengkap atau null
+        return _getFullProfilePhotoUrl(widget.currentUser!.profilePhotoPath);
+      }
+      // Fallback ke asset default jika tidak ada URL atau URL kosong
+      return 'assets/images/user_avatar.png'; // Pastikan path ini benar
+    }
+
+    final String? imageSource = _getProfileImageSource();
 
     return Column(
       children: [
@@ -135,49 +143,62 @@ class _ProfileAvatarSectionState extends State<ProfileAvatarSection> {
           ),
           child: ClipOval(
             child:
-                _isUploadingPhoto
+                _isUploadingPhoto // Tampilkan progress saat upload
                     ? const Center(child: CircularProgressIndicator())
-                    : (photoUrl != null && photoUrl.isNotEmpty)
-                    ? Image.network(
-                      photoUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        debugPrint(
-                          'ProfileAvatarSection: Error loading network image: $error',
-                        );
-                        return Icon(
-                          Icons.person,
-                          size: 60,
-                          color: Colors.grey[600],
-                        );
-                      },
-                    )
-                    : Image.asset(
-                      'assets/images/background.jpg',
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        debugPrint(
-                          'ProfileAvatarSection: Error loading default asset avatar: $error',
-                        );
-                        return Icon(
-                          Icons.person,
-                          size: 60,
-                          color: Colors.grey[600],
-                        );
-                      },
+                    : (imageSource != null && imageSource.isNotEmpty)
+                    ? (imageSource.startsWith(
+                          'http',
+                        ) // Cek apakah ini URL atau asset path
+                        ? Image.network(
+                          imageSource,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            debugPrint(
+                              'ProfileAvatarSection: Error loading network image: $error',
+                            );
+                            return Icon(
+                              Icons.person,
+                              size: 60,
+                              color: Colors.grey[600],
+                            );
+                          },
+                        )
+                        : Image.asset(
+                          // Menggunakan Image.asset untuk foto lokal
+                          imageSource,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            debugPrint(
+                              'ProfileAvatarSection: Error loading default asset avatar: $error',
+                            );
+                            return Icon(
+                              Icons.person,
+                              size: 60,
+                              color: Colors.grey[600],
+                            );
+                          },
+                        ))
+                    : Icon(
+                      // Fallback jika tidak ada sumber gambar sama sekali
+                      Icons.person,
+                      size: 60,
+                      color: Colors.grey[600],
                     ),
           ),
         ),
         const SizedBox(height: 10),
-        // TextButton.icon(
-        //   icon: const Icon(Icons.photo_camera, size: 18),
-        //   label:
-        //       _isUploadingPhoto
-        //           ? const Text("Mengunggah...")
-        //           : const Text("Ubah Foto"),
-        //   onPressed: _isUploadingPhoto ? null : _changePhoto,
-        //   style: TextButton.styleFrom(foregroundColor: AppColors.textDark),
-        // ),
+        TextButton.icon(
+          // <--- Tombol "Ubah Foto"
+          icon: const Icon(Icons.photo_camera, size: 18),
+          label:
+              _isUploadingPhoto
+                  ? const Text("Mengunggah...")
+                  : const Text("Ubah Foto"),
+          onPressed: _isUploadingPhoto ? null : _changePhoto,
+          style: TextButton.styleFrom(
+            foregroundColor: AppColors.textDark, // Warna teks tombol
+          ),
+        ),
       ],
     );
   }

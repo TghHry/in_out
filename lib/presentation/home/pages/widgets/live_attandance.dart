@@ -6,10 +6,7 @@ import 'package:intl/intl.dart';
 class LiveAttendanceCard extends StatelessWidget {
   final Stream<DateTime> clockStream;
 
-  const LiveAttendanceCard({
-    super.key,
-    required this.clockStream,
-  });
+  const LiveAttendanceCard({super.key, required this.clockStream});
 
   @override
   Widget build(BuildContext context) {
@@ -32,8 +29,10 @@ class LiveAttendanceCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
-            'Live Attendance',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            'Live Attandance',
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
           Center(
@@ -44,9 +43,9 @@ class LiveAttendanceCard extends StatelessWidget {
                 return Text(
                   DateFormat('HH:mm:ss', 'id_ID').format(currentTime),
                   style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.homeTopBlue,
-                      ),
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.homeTopBlue,
+                  ),
                 );
               },
             ),
@@ -54,18 +53,24 @@ class LiveAttendanceCard extends StatelessWidget {
           Center(
             child: Text(
               DateFormat('EEE, dd MMMM yyyy', 'id_ID').format(now),
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
             ),
           ),
           const Divider(height: 30, thickness: 1),
           Text(
             'Office Hours',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 5),
           Text(
             '08:00 AM - 05:00 PM',
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Colors.grey[700]),
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall?.copyWith(color: Colors.grey[700]),
           ),
           const SizedBox(height: 20),
         ],

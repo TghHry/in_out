@@ -93,7 +93,7 @@ BEGIN
             VALUE "FileDescription", "absis" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "absis" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2025 com.example. All rights reserved." "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2025 com.ppkd. All rights reserved." "\0"
             VALUE "OriginalFilename", "absis.exe" "\0"
             VALUE "ProductName", "absis" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"

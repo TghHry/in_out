@@ -397,14 +397,14 @@ class _AttandancePageState extends State<AttandancePage> {
                     _confirmCheckIn();
                   },
                 ),
-                // ListTile(
-                //   leading: const Icon(Icons.event_busy, color: Colors.orange),
-                //   title: const Text('Ajukan Izin / Sakit'),
-                //   onTap: () {
-                //     Navigator.pop(context);
-                //     _showIzinReasonDialog();
-                //   },
-                // ),
+                ListTile(
+                  leading: const Icon(Icons.event_busy, color: Colors.orange),
+                  title: const Text('Ajukan Izin / Sakit'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showIzinReasonDialog();
+                  },
+                ),
               ],
               if (_todayAttendance?.status == 'masuk' &&
                   _todayAttendance?.checkOut == null)
@@ -881,7 +881,7 @@ class _AttandancePageState extends State<AttandancePage> {
       actionButtonText = 'Anda Sedang Izin';
       showActionButton = false;
     } else {
-      currentStatusText = 'Status absensi tidak dikenal.';
+      currentStatusText = 'Belum Absensi.';
       actionButtonText = 'Mulai Absensi';
       showActionButton = true;
     }

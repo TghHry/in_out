@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:in_out_2/presentation/home/pages/widgets/stat_row.dart';
-import 'package:in_out_2/utils/app_colors.dart'; // Pastikan path benar
+import 'package:in_out_2/utils/app_colors.dart'; 
 
 class AttendanceStatsCard extends StatelessWidget {
   final Map<String, dynamic>? attendanceStats;
@@ -94,11 +94,11 @@ class AttendanceStatsCard extends StatelessWidget {
                     label: 'Total Masuk',
                     value: '${attendanceStats!['total_masuk_count']} hari',
                   ),
-                  // StatRow(
-                  //   icon: Icons.event_busy,
-                  //   label: 'Total Izin',
-                  //   value: '${attendanceStats!['total_izin_count']} hari',
-                  // ),
+                  StatRow(
+                    icon: Icons.event_busy,
+                    label: 'Total Izin',
+                    value: '${attendanceStats!['total_izin_count']} hari',
+                  ),
                   StatRow(
                     icon: Icons.today,
                     label: 'Sudah Absen Hari Ini',

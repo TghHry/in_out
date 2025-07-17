@@ -25,7 +25,7 @@ class CopyrightWatermark extends StatelessWidget {
         child: Text(
           text,
           style: TextStyle(
-            color: textColor ?? AppColors.textDark.withOpacity(0.1),
+            color: textColor ?? AppColors.textDark.withOpacity(1.0),
             fontSize: fontSize,
             fontWeight: fontWeight,
           ),

@@ -5,7 +5,7 @@ class StatRow extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
-  final Color? valueColor; // Mengubah nama parameter untuk kejelasan
+  final Color? valueColor; 
 
   const StatRow({
     super.key,

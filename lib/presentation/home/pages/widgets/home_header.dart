@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:in_out_2/models/user_model.dart';
 import 'package:in_out_2/utils/app_colors.dart';
-// import 'package:intl/intl.dart';
+
 
 class HomeHeader extends StatelessWidget {
   final User? currentUser;
